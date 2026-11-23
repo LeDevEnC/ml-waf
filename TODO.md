@@ -63,14 +63,14 @@ sys.path.append("..")
 
 ### Lundi 23
 - [x] Choix du dataset (SR-BH 2020) et exploration rapide (`dataset_check.py`)
-- [ ] `preprocessing.py` (build_text, normalisation Host/Referer, marqueurs)
+- [x] `preprocessing.py` (build_text, normalisation Host/Referer, marqueurs)
 - [X] Répartition des rôles et lecture de son guide (tous)
 - [X] État de l'art : une référence chacun, 2 idées à retenir (PeerJ 2025, ModSec-Learn, open-appsec, WAMM)
 - [X] Restitution de fin de séance (problématique, dataset, méthodologie, déploiement)
-- [ ] Augustin : `sample.parquet` disponible **ce soir** pour débloquer Mathéo et Célian
+- [x] Augustin : `sample.parquet` disponible **ce soir** pour débloquer Mathéo et Célian
 
 ### Mardi 24 : chaîne complète de bout en bout + premiers résultats
-- [ ] Augustin : `train.parquet` et `test.parquet` produits **mardi matin**, puis `01_donnees.ipynb` finalisé (Markdown + 3 graphiques)
+- [x] Augustin : `train.parquet` et `test.parquet` produits **mardi matin**, puis `01_donnees.ipynb` finalisé (Markdown + 3 graphiques)
 - [ ] Mathéo : première LogReg TF-IDF exportée en `models/waf.joblib` **avant midi**, puis comparaison des 5 classifiers l'après-midi
 - [ ] Célian : marqueurs analysés et améliorés, pipelines marqueurs en cross-validation, pipeline mix
 - [ ] Malki : stack Docker avec modèle factice le matin, premier `waf.joblib` branché l'après-midi, logs
