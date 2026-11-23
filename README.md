@@ -50,3 +50,11 @@ Le dataset (`*.csv`) n'est pas versionné (voir `.gitignore`). Il faut le télé
 Téléchargement (Harvard Dataverse, *SR-BH 2020 multi-label dataset*) : <https://doi.org/10.7910/DVN/OGOIXX>
 
 Les 14 dernières colonnes sont les labels : `000 - Normal` et 13 catégories d'attaque. Les colonnes `request_*` décrivent la requête HTTP.
+
+## Rôles
+
+Malki : Déploiement / Documentation du déploiement
+Augustin : Partie exploration et pré-traitement du dataset
+Mathéo : Modèle TD-IDF
+Célian : Modèle marqueurs
+Nolhan : Tests d'attaque, mesure de faux positifs + documentation de notebook
