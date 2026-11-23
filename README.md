@@ -26,11 +26,13 @@ Analyse `data_capec_multilabel.csv` et affiche dans le terminal :
 
 - Python 3
 - `pandas`
+- `dotenv`
 
 ```bash
 python -m venv venv
 source venv/bin/activate
 pip install pandas
+pip install dotenv
 ```
 
 ## Utilisation

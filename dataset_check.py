@@ -1,5 +1,8 @@
 import pandas as pd
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def titre(t):
     """Affiche un titre de section pour aérer la sortie du terminal."""
@@ -8,7 +11,7 @@ def titre(t):
     print("=" * 70)
 
 
-df = pd.read_csv("/home/dev/Téléchargements/data_capec_multilabel.csv", dtype=str)
+df = pd.read_csv(os.getenv('CSV_PATH'), dtype=str)
 
 titre("0. VUE D'ENSEMBLE")
 print("Dimensions (lignes, colonnes) :", df.shape) # Affiche le nombre de lignes et de colonnes
