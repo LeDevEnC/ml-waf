@@ -1,6 +1,6 @@
 # ml-waf
 
-Projet de WAF (Web Application Firewall) basé sur le machine learning — ENSIBS 3A, IA pour la cybersécurité.
+Projet de WAF (Web Application Firewall) basé sur le machine learning - ENSIBS 3A, IA pour la cybersécurité.
 
 L'objectif est de classer des requêtes HTTP comme légitimes ou malveillantes, avec une classification **multi-label** selon les catégories d'attaque CAPEC.
 
