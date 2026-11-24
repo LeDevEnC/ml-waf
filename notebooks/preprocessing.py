@@ -4,6 +4,7 @@ Prétraitement commun du projet ml-waf.
 REQ_COLS : colonnes de la requête HTTP qui servent à construire le texte
 build_text_df(df) : transforme chaque requête en une chaîne normalisée
 marqueurs(texts) : marqueurs manuels (DataFrame numérique) calculés sur ces chaînes
+MARQUEURS_RETENUS : les marqueurs gardés après sélection (voir 03_marqueurs.ipynb)
 """
 import os
 import math
@@ -157,8 +158,19 @@ _SCANNER_RE = re.compile(
     r"openvas|burp|zap|w3af|curl|wget|python-requests|python-urllib|go-http-client|libwww"
 )
 _WP_RE = re.compile(r"wp-login|xmlrpc\.php|wp-admin|wp-config")
-_SPECIAUX = set("<>'\";(){}|`$\\")
+_SPECIAUX_RE = re.compile(r"[<>'\";(){}|`$\\]")
 _METHODES_STD = {"get", "post", "head"}
+
+# Marqueurs gardés après sélection (03_marqueurs.ipynb, étape 2 bis) :
+# AUC seule >= 0.51, plus nb_parametres et methode_inhabituelle (utiles en combinaison).
+# Les 10 autres candidats sont exclus : constants, sans apport, ou inversés par le bruit
+# de labels du dataset (contient_cmd, contient_fichier_sensible...).
+MARQUEURS_RETENUS = [
+    "longueur_url", "longueur_body", "nb_parametres", "nb_guillemets", "nb_speciaux",
+    "ratio_speciaux", "entropie_url", "nb_mots_sql", "contient_union_select",
+    "contient_sql_tautologie", "contient_commentaire_sql", "contient_traversal",
+    "contient_crlf", "methode_inhabituelle",
+]
 _PROTOCOLES_STD = {"http/1.1", "http/1.0"}
 
 
@@ -180,10 +192,12 @@ def _as_series(texts) -> pd.Series:
     return pd.Series(arr).fillna("").astype(str)
 
 
-def marqueurs(texts) -> pd.DataFrame:
+def marqueurs(texts, tous: bool = False) -> pd.DataFrame:
     """Calcule les marqueurs manuels à partir de la colonne `text` (sortie de build_text_df).
 
-    Retourne un DataFrame numérique (une ligne par requête), aligné sur l'index d'entrée.
+    Retourne un DataFrame numérique (une ligne par requête), aligné sur l'index d'entrée,
+    avec les colonnes de MARQUEURS_RETENUS. tous=True renvoie les 24 marqueurs candidats
+    (pour l'analyse et la sélection).
     """
     s = _as_series(texts)
     f = s.str.extract(_FIELD_RE)
@@ -201,14 +215,14 @@ def marqueurs(texts) -> pd.DataFrame:
     M["longueur_body"] = body.str.len()
     M["nb_parametres"] = url.str.count(r"[?&][^=&]*=")
     M["nb_guillemets"] = payload.str.count(r"['\"]")
-    M["nb_speciaux"] = payload.map(lambda x: sum(c in _SPECIAUX for c in x))
+    M["nb_speciaux"] = payload.str.count(_SPECIAUX_RE)
     M["ratio_speciaux"] = M["nb_speciaux"] / payload.str.len().clip(lower=1)
     M["entropie_url"] = url.map(_entropie)
 
     # Signatures d'attaque
     M["nb_mots_sql"] = payload.map(lambda x: len(set(_SQL_KW_RE.findall(x))))
     for nom, rx in _PATTERNS_RE.items():
-        M[nom] = payload.map(lambda x, rx=rx: int(rx.search(x) is not None))
+        M[nom] = payload.str.contains(rx).astype(int)
 
     # En-têtes et contexte
     M["methode_inhabituelle"] = (~f["http_method"].isin(_METHODES_STD)).astype(int)
@@ -219,4 +233,5 @@ def marqueurs(texts) -> pd.DataFrame:
     M["cible_wordpress"] = url.str.contains(_WP_RE).astype(int)
     M["referer_externe"] = ((f["referer"] != "") & ~f["referer"].str.startswith("self")).astype(int)
 
-    return M.astype(float)
+    M = M.astype(float)
+    return M if tous else M[MARQUEURS_RETENUS]
