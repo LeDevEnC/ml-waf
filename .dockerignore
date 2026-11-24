@@ -1,0 +1,12 @@
+data/
+venv/
+.git/
+.env
+rapport/
+models/
+deploiement/logs/
+notebooks/*.ipynb
+**/.ipynb_checkpoints/
+**/__pycache__/
+*.csv
+*.parquet
