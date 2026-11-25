@@ -4,6 +4,5 @@ venv-waf/
 todo-perso/
 __pycache__/
 .ipynb_checkpoints/
-*.joblib
 .env
 CLAUDE.md
