@@ -51,10 +51,12 @@ Téléchargement (Harvard Dataverse, *SR-BH 2020 multi-label dataset*) : <https:
 
 Les 14 dernières colonnes sont les labels : `000 - Normal` et 13 catégories d'attaque. Les colonnes `request_*` décrivent la requête HTTP.
 
-## Rôles
+## Rôles
 
-Malki : Déploiement / Documentation du déploiement
-Augustin : Partie exploration et pré-traitement du dataset
-Mathéo : Modèle TD-IDF
-Célian : Modèle marqueurs
-Nolhan : Tests d'attaque, mesure de faux positifs + documentation de notebook
+| Membre | Responsabilité |
+|---|---|
+| Malki | Déploiement / Documentation du déploiement |
+| Augustin | Exploration et pré-traitement du dataset |
+| Mathéo | Modèle TF-IDF |
+| Célian | Modèle marqueurs |
+| Nolhan | Tests d'attaque, mesure des faux positifs et documentation du notebook |
