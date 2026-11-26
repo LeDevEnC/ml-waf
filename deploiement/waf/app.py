@@ -11,7 +11,7 @@ from preprocessing import build_text, champs_from_http
 
 # Configuration (lue dans les variables d'environnement du docker-compose)
 BACKEND = os.environ.get("WAF_BACKEND", "http://dvwa:80")
-MODEL_PATH = Path(os.environ.get("WAF_MODEL_PATH", "/app/models/waf.joblib"))
+MODEL_PATH = Path(os.environ.get("WAF_MODEL_PATH", "/app/models/waf_tfidf.joblib"))
 SEUIL = float(os.environ.get("WAF_SEUIL", "0.5"))
 LOG_PATH = Path(os.environ.get("WAF_LOG_PATH", "/app/logs/waf.log"))
 

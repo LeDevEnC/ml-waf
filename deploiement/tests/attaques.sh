@@ -2,7 +2,7 @@
 # Script de démonstration WAF ML - Validation du blocage (403) et du passage (200)
 # Usage : bash deploiement/tests/attaques.sh [URL_BASE]
 
-BASE_URL="${1:-http://localhost}"
+BASE_URL="${1:-http://localhost:8080}"
 
 echo "============================================================"
 echo " Test du WAF sur $BASE_URL"

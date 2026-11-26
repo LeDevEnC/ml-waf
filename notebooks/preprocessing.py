@@ -6,6 +6,7 @@ build_text_df(df) : transforme chaque requête en une chaîne normalisée
 marqueurs(texts) : marqueurs manuels (DataFrame numérique) calculés sur ces chaînes
 MARQUEURS_RETENUS : les marqueurs gardés après sélection (voir 03_marqueurs.ipynb)
 """
+import json
 import os
 import math
 import re
@@ -31,6 +32,13 @@ REQ_COLS = [
     "request_connection",
     "request_body",
 ]
+
+# Colonnes réellement vues par le modèle déployé : la méthode HTTP est exclue car, dans le dataset,
+# 87 % des POST sont des attaques (contre 67 % des GET) : le modèle bloquait tout formulaire légitime.
+# Les en-têtes de négociation (accept*, connection) sont aussi exclus : ce sont des habitudes d'outils
+# (le dataset les associe à des attaquants) et non du contenu ; ils poussaient les scores des vrais navigateurs.
+_COLS_EXCLUES = {"request_http_method", "request_content_type", "request_accept", "request_accept_language", "request_accept_encoding", "request_connection"}
+MODEL_COLS = [c for c in REQ_COLS if c not in _COLS_EXCLUES]
 
 SITE_HOST = os.environ.get("WAF_SITE_HOST","test-site.com")
 
@@ -72,18 +80,50 @@ def build_text_df(df: pd.DataFrame) -> pd.Series:
     return pd.Series(texts, index=df.index)
 
 
+def _aplatir_json(corps: str) -> str:
+    """
+    Normalisation du corps JSON : {"email":"a@b.fr","password":"x"} -> email=a@b.fr&password=x.
+    Le dataset associe la syntaxe JSON à des attaques (presque tous ses corps JSON en sont) : sans cette
+    normalisation, toute API JSON légitime est bloquée. Seul le contenu (clés, valeurs) compte pour le modèle.
+    Un corps qui n'est pas du JSON valide est laissé tel quel. Appliqué à l'entraînement ET en production.
+    """
+    s = corps.strip()
+    if not s or s[0] not in "{[":
+        return corps
+    try:
+        obj = json.loads(s)
+    except ValueError:
+        return corps
+    paires = []
+
+    def parcourir(x, cle=""):
+        if isinstance(x, dict):
+            for k, v in x.items():
+                parcourir(v, str(k))
+        elif isinstance(x, list):
+            for v in x:
+                parcourir(v, cle)
+        else:
+            paires.append(f"{cle}={'' if x is None else x}")
+    parcourir(obj)
+    return "&".join(paires).lower()
+
+
 def build_text(champs: dict) -> str:
     """
-    Même texte que build_text_df, mais pour UNE seule requête (utilisé par l'API).
+    Texte d'UNE seule requête, restreint aux MODEL_COLS (utilisé par l'API).
+    Identique à restrict_text(build_text_df(...)) utilisé à l'entraînement.
     champs : {nom_de_colonne: valeur}, ex. le résultat de champs_from_http.
     """
     parts = []
-    for col in REQ_COLS:
+    for col in MODEL_COLS:
         val = champs.get(col)
         if val is None or (isinstance(val, float) and val != val):   # None ou NaN -> "" (comme fillna(""))
             val = ""
-        val = str(val)
-        parts.append(f"{col} {_clean_value(col, val)}")
+        val = _clean_value(col, str(val))
+        if col == "request_body":
+            val = _aplatir_json(val)
+        parts.append(f"{col} {val}")
     return " ".join(parts)
 
 
@@ -132,6 +172,75 @@ _FIELD_RE = re.compile(
     + f" {REQ_COLS[-1]} (?P<{REQ_COLS[-1][8:]}>.*)$",
     re.DOTALL,
 )
+
+
+def restrict_text(texts: pd.Series) -> pd.Series:
+    """Texte à 13 champs (sortie de build_text_df, colonne `text` des parquet) -> texte MODEL_COLS."""
+    f = texts.str.extract(_FIELD_RE)
+    if f.isna().all(axis=1).any():
+        raise ValueError("Texte au mauvais format (attendu : sortie de build_text_df)")
+    f = f.fillna("")
+    f["body"] = f["body"].map(_aplatir_json)
+    out = None
+    for col in MODEL_COLS:
+        part = f"{col} " + f[col[8:]]
+        out = part if out is None else out + " " + part
+    return out
+
+
+# Signatures d'attaque strictes, utilisées uniquement pour corriger les labels du dataset :
+# 21 % de ses requêtes "légitimes" sont des injections placées dans le CHEMIN de l'URL
+# (ex. /blog/index.php&&cat+/etc/passwd/2020/04, /blog/...+sleep(15)+...). Pour un WAF, ce sont des attaques.
+SIGNATURES_ATTAQUE = re.compile("|".join([
+    r"etc/passwd|etc/shadow|win\.ini|boot\.ini|/proc/self",
+    r"<\s*script|javascript:|on(?:error|load|mouseover|focus)\s*=|<\s*(?:img|svg|iframe)\b[^>]*\bon\w+\s*=|alert\s*\(",
+    r"(?:;|\|\||&&|\||`)\s*(?:ls|cat|id|whoami|uname|wget|curl|nc|bash|sh|ping)(?![\w=])",
+    r"union[\s+/*]+(?:all[\s+/*]+)?select|(?:'|\"|\b)\s*(?:or|and)[\s+]+['\"]?\d+['\"]?\s*=\s*['\"]?\d+|sleep\s*\(\s*\d",
+]))
+
+
+_CARACTERES_PAYLOAD = re.compile(r"['\"<>;`|]|--|\.\./")
+_URL_AUTH = re.compile(r"login|signin|auth")
+_CHEMIN_AUTH = re.compile(r"(?:/[\w.\-]+)*/[\w.\-]*(?:login|signin|auth)[\w.\-]*/?")
+# Champs d'un formulaire d'authentification (WordPress et génériques) : sans autre champ ni payload, la requête
+# ne contient rien d'« attaque » dans son contenu.
+_CLES_AUTH = {"log", "pwd", "rememberme", "wp-submit", "redirect_to", "testcookie", "user_login", "user_email", "user_pass",
+              "username", "password", "user", "pass", "login", "email", "remember", "submit", "action", "redirect", "reauth",
+              "loggedout", "interim-login", "key", "checkemail", "wp_lang", "_wpnonce", "redirect_url", "next"}
+
+
+def _cles(chaine: str) -> set:
+    return {kv.split("=", 1)[0] for kv in chaine.split("&") if kv}
+
+
+def masque_identifiants_seuls(texts: pd.Series) -> pd.Series:
+    """
+    True pour les requêtes d'authentification SANS payload : page de login, formulaire de login, mot de passe oublié,
+    force brute / énumération d'utilisateurs (noms aléatoires). Le dataset en étiquette des milliers comme attaques
+    (wp-login.php : ~2 400 attaques POST/GET de ce type) contre quasi aucune légitime : une requête de login isolée
+    ne se distingue pas par son contenu, c'est un comportement (trop d'essais) à traiter par limitation de débit.
+    Les garder apprend au modèle que tout login est une attaque.
+    """
+    url = texts.str.extract(r"request_http_request (\S*)")[0].fillna("")
+    corps = texts.str.extract(r" request_body (.*)$")[0].fillna("")
+    res = pd.Series(False, index=texts.index)
+    for i in url.index[url.str.contains(_URL_AUTH)]:
+        u, c = url[i], corps[i]
+        chemin, _, q = u.partition("?")
+        if (_CARACTERES_PAYLOAD.search(u) or _CARACTERES_PAYLOAD.search(c) or SIGNATURES_ATTAQUE.search(u + " " + c)
+                or not _CHEMIN_AUTH.fullmatch(chemin)):
+            continue
+        res[i] = _cles(q) <= _CLES_AUTH and _cles(c) <= _CLES_AUTH
+    return res
+
+
+def nettoyer_labels(texts: pd.Series, labels) -> tuple:
+    """Passe à 1 les requêtes étiquetées 0 qui portent une signature d'attaque. Retourne (labels, nb_corriges)."""
+    y = np.asarray(labels).astype(int).copy()
+    bruit = (y == 0) & texts.str.contains(SIGNATURES_ATTAQUE).to_numpy()
+    y[bruit] = 1
+    return y, int(bruit.sum())
+
 
 _SQL_KEYWORDS = [
     "union", "select", "insert", "update", "delete", "drop", "from", "where",
