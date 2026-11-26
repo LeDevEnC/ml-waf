@@ -88,25 +88,25 @@ sys.path.append("..")
 **Après-midi**
 - [X] Mathéo + Célian : `waf.ipynb` assemblé et exécuté de bout en bout (Restart & Run All)
 - [X] Mathéo + Célian : 1/2 page chacun + figures envoyées à Nolhan **avant 15h**
-- [] Malki : modèle final branché, 1/2 page « Architecture et déploiement » envoyée à Nolhan
-- [] Nolhan : rapport PDF finalisé, slides assemblées
-- [] Augustin : préparation du zip (voir Livrable), vérifié depuis une copie propre
+- [X] Malki : modèle final branché, 1/2 page « Architecture et déploiement » envoyée à Nolhan
+- [X] Nolhan : rapport PDF finalisé, slides assemblées
+- [X] Augustin : préparation du zip (voir Livrable), vérifié depuis une copie propre
 
 **Soir**
-- [ ] Tous : répétition complète de la présentation (20 min chrono)
-- [ ] Vidéo de secours de la démo enregistrée
-- [ ] Zip final prêt
+- [X] Tous : répétition complète de la présentation (20 min chrono)
+- [X] Vidéo de secours de la démo enregistrée
+- [X] Zip final prêt
 
 ### Vendredi 27
-- [ ] Dernière répétition rapide
-- [ ] Zip déposé **avant 18h** (il est prêt depuis mercredi, ne pas attendre la dernière minute)
+- [X] Dernière répétition rapide
+- [X] Zip déposé **avant 18h** (il est prêt depuis mercredi, ne pas attendre la dernière minute)
 
 ## Livrable (zip)
 
-- [ ] Le dataset (`data_capec_multilabel.csv`)
-- [ ] Le notebook `waf.ipynb` (exécuté, avec les sorties visibles)
-- [ ] Le dossier de déploiement (`deploiement/` + `preprocessing.py` + `models/waf.joblib`)
-- [ ] Le rapport technique PDF (quelques pages)
+- [X] Le dataset (`data_capec_multilabel.csv`)
+- [X] Le notebook `waf.ipynb` (exécuté, avec les sorties visibles)
+- [X] Le dossier de déploiement (`deploiement/` + `preprocessing.py` + `models/waf.joblib`)
+- [X] Le rapport technique PDF (quelques pages)
 
 ## Présentation (20 min)
 
