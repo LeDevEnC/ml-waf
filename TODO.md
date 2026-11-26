@@ -71,26 +71,26 @@ sys.path.append("..")
 
 ### Mardi 24 : chaîne complète de bout en bout + premiers résultats
 - [x] Augustin : `train.parquet` et `test.parquet` produits **mardi matin**, puis `01_donnees.ipynb` finalisé (Markdown + 3 graphiques)
-- [ ] Mathéo : première LogReg TF-IDF exportée en `models/waf.joblib` **avant midi**, puis comparaison des 5 classifiers l'après-midi
-- [ ] Célian : marqueurs analysés et améliorés, pipelines marqueurs en cross-validation, pipeline mix
-- [ ] Malki : stack Docker avec modèle factice le matin, premier `waf.joblib` branché l'après-midi, logs
-- [ ] Nolhan : `04_tests.ipynb` (requêtes de test), squelette du rapport, sections Introduction et État de l'art rédigées
-- [ ] Augustin : 1/2 page « Dataset et prétraitement » + figures envoyées à Nolhan **mardi soir**
+- [X] Mathéo : première LogReg TF-IDF exportée en `models/waf.joblib` **avant midi**, puis comparaison des 5 classifiers l'après-midi
+- [X] Célian : marqueurs analysés et améliorés, pipelines marqueurs en cross-validation, pipeline mix
+- [X] Malki : stack Docker avec modèle factice le matin, premier `waf.joblib` branché l'après-midi, logs
+- [X] Nolhan : `04_tests.ipynb` (requêtes de test), squelette du rapport, sections Introduction et État de l'art rédigées
+- [X] Augustin : 1/2 page « Dataset et prétraitement » + figures envoyées à Nolhan **mardi soir**
 
 ### Mercredi 25 : tout finir
 **Matin**
-- [ ] Mathéo : GridSearchCV sur le meilleur modèle, choix du seuil, évaluation finale sur le test, export du modèle final
-- [ ] Célian : expérience avec / sans Referer, importance des marqueurs, bonus type d'attaque seulement s'il reste du temps
-- [ ] Malki : démo d'attaques bloquées (curl, sqlmap), README de déploiement
-- [ ] Nolhan : tests sur la stack Docker, mesure des faux positifs sur une vraie navigation
-- [ ] Augustin : slides de la partie dataset, relecture du rapport
+- [X] Mathéo : GridSearchCV sur le meilleur modèle, choix du seuil, évaluation finale sur le test, export du modèle final
+- [X] Célian : expérience avec / sans Referer, importance des marqueurs, bonus type d'attaque seulement s'il reste du temps
+- [X] Malki : démo d'attaques bloquées (curl, sqlmap), README de déploiement
+- [X] Nolhan : tests sur la stack Docker, mesure des faux positifs sur une vraie navigation
+- [X] Augustin : slides de la partie dataset, relecture du rapport
 
 **Après-midi**
-- [ ] Mathéo + Célian : `waf.ipynb` assemblé et exécuté de bout en bout (Restart & Run All)
-- [ ] Mathéo + Célian : 1/2 page chacun + figures envoyées à Nolhan **avant 15h**
-- [ ] Malki : modèle final branché, 1/2 page « Architecture et déploiement » envoyée à Nolhan
-- [ ] Nolhan : rapport PDF finalisé, slides assemblées
-- [ ] Augustin : préparation du zip (voir Livrable), vérifié depuis une copie propre
+- [X] Mathéo + Célian : `waf.ipynb` assemblé et exécuté de bout en bout (Restart & Run All)
+- [X] Mathéo + Célian : 1/2 page chacun + figures envoyées à Nolhan **avant 15h**
+- [] Malki : modèle final branché, 1/2 page « Architecture et déploiement » envoyée à Nolhan
+- [] Nolhan : rapport PDF finalisé, slides assemblées
+- [] Augustin : préparation du zip (voir Livrable), vérifié depuis une copie propre
 
 **Soir**
 - [ ] Tous : répétition complète de la présentation (20 min chrono)
